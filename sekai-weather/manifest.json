@@ -1,0 +1,99 @@
+{
+  "id": "sekai-weather",
+  "name": "Sekai Weather",
+  "version": "0.1.0",
+  "author": "Warren <warren@local>",
+  "description": "SekaiPop's desktop weather card: plate, gauges, hourly/days forecast, minimal/classic styles.",
+  "license": "MIT",
+  "official": false,
+  "hosts": [
+    "desktopWidget"
+  ],
+  "entryPoints": {
+    "main": "service/Main.qml",
+    "content": "content/Widget.qml"
+  },
+  "files": [
+    "service/Main.qml",
+    "content/WeatherSource.qml",
+    "content/SekaiPlate.qml",
+    "content/WeatherMath.js",
+    "content/OpenMeteo.js",
+    "content/Pill.qml",
+    "content/MaterialIcon.qml",
+    "content/IconMap.js",
+    "content/RoundClip.qml",
+    "content/DotField.qml",
+    "content/Slant.qml",
+    "content/SekaiTheme.qml",
+    "bin/weathercard-state.sh",
+    "assets/preview-widget.png",
+    "content/Burst.qml",
+    "content/DiamondDot.qml",
+    "content/StickerText.qml",
+    "content/WeatherGlyph.qml",
+    "content/SizeKey.qml"
+  ],
+  "capabilities": {
+    "densities": [
+      "compact",
+      "full"
+    ],
+    "network": [
+      "api.open-meteo.com",
+      "geocoding-api.open-meteo.com",
+      "ipwho.is"
+    ]
+  },
+  "defaults": {
+    "host": "desktopWidget",
+    "label": "Sekai Weather",
+    "desktopWidget": {
+      "bg": "none"
+    }
+  },
+  "dependencies": {
+    "commands": [
+      "curl",
+      "mkdir",
+      "sh",
+      "ryoku-plugins-place"
+    ]
+  },
+  "metadata": {
+    "settings": [
+      {
+        "key": "location",
+        "type": "text",
+        "label": "Location",
+        "group": "Weather",
+        "default": ""
+      },
+      {
+        "key": "fahrenheit",
+        "type": "toggle",
+        "label": "Fahrenheit",
+        "group": "Weather",
+        "default": false
+      },
+      {
+        "key": "use24h",
+        "type": "toggle",
+        "label": "24-hour time",
+        "group": "Weather",
+        "default": true
+      },
+      {
+        "key": "view",
+        "type": "choice",
+        "label": "View",
+        "group": "Weather",
+        "default": "days",
+        "options": [
+          "hourly",
+          "days"
+        ]
+      }
+    ]
+  }
+}

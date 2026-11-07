@@ -1,0 +1,141 @@
+{
+  "id": "sekai-visualizer",
+  "name": "Sekai Visualizer",
+  "version": "0.2.0",
+  "author": "Warren <warren@local>",
+  "description": "SekaiPop's desktop audio visualizer: pocket player with album cover, key bed, prev/play/next and seek lane (Sekai style).",
+  "license": "MIT",
+  "official": false,
+  "hosts": [
+    "desktopWidget"
+  ],
+  "entryPoints": {
+    "main": "service/Main.qml",
+    "content": "content/Widget.qml"
+  },
+  "files": [
+    "assets/preview-widget.png",
+    "bin/visualizer-state.sh",
+    "content/ChartMath.js",
+    "content/Framing.js",
+    "content/IconMap.js",
+    "content/KeyBedMath.js",
+    "content/MaterialIcon.qml",
+    "content/MediaSource.qml",
+    "content/Pill.qml",
+    "content/RoundClip.qml",
+    "content/ScopeMath.js",
+    "content/SekaiTheme.qml",
+    "content/SekaiVisualizer.qml",
+    "content/ShaderBarsVisualizer.qml",
+    "content/ShaderVisualizerEngine.qml",
+    "content/ShaderVisualizerLayer.qml",
+    "content/TideShaderLayer.qml",
+    "content/TideVisualizer.qml",
+    "content/VisualizerCover.qml",
+    "content/VisualizerEngine.qml",
+    "content/Widget.qml",
+    "content/cava-pc.conf",
+    "content/cava-sekai.conf",
+    "content/icons/bold/maximize-square.svg",
+    "content/icons/bold/music-note.svg",
+    "content/icons/bold/pause.svg",
+    "content/icons/bold/play.svg",
+    "content/icons/bold/skip-next.svg",
+    "content/icons/bold/skip-previous.svg",
+    "content/icons/bold/star.svg",
+    "content/icons/outline/maximize-square.svg",
+    "content/icons/outline/music-note.svg",
+    "content/icons/outline/pause.svg",
+    "content/icons/outline/play.svg",
+    "content/icons/outline/skip-next.svg",
+    "content/icons/outline/skip-previous.svg",
+    "content/icons/outline/star.svg",
+    "content/sekai_analyzer.py",
+    "content/shaders/visualizer/aurora.frag.qsb",
+    "content/shaders/visualizer/dots.frag.qsb",
+    "content/shaders/visualizer/mirror.frag.qsb",
+    "content/shaders/visualizer/pulse.frag.qsb",
+    "content/shaders/visualizer/ribbons.frag.qsb",
+    "content/shaders/visualizer/ring.frag.qsb",
+    "content/shaders/visualizer/scope.frag.qsb",
+    "content/shaders/visualizer/tide.frag.qsb",
+    "service/Main.qml"
+  ],
+  "capabilities": {
+    "densities": [
+      "compact",
+      "full"
+    ],
+    "network": [
+      "i.ytimg.com"
+    ]
+  },
+  "defaults": {
+    "host": "desktopWidget",
+    "label": "Sekai Visualizer",
+    "desktopWidget": {
+      "bg": "none"
+    }
+  },
+  "dependencies": {
+    "commands": [
+      "mkdir",
+      "bash",
+      "curl",
+      "nice",
+      "setpriv",
+      "python3",
+      "cava",
+      "ryoku-plugins-place"
+    ]
+  },
+  "metadata": {
+    "settings": [
+      {
+        "key": "sizeIndex",
+        "type": "choice",
+        "label": "Size",
+        "group": "Visualizer",
+        "default": 1,
+        "options": [
+          "S",
+          "M",
+          "L",
+          "XL"
+        ]
+      },
+      {
+        "key": "colorMode",
+        "type": "choice",
+        "label": "Colours",
+        "group": "Visualizer",
+        "default": 0,
+        "options": [
+          "Cover",
+          "Attributes",
+          "Theme"
+        ]
+      },
+      {
+        "key": "stayWhenPaused",
+        "type": "toggle",
+        "label": "Stay when paused",
+        "group": "Visualizer",
+        "default": true
+      },
+      {
+        "key": "perf",
+        "type": "choice",
+        "label": "Performance",
+        "group": "Visualizer",
+        "default": 0,
+        "options": [
+          "Full",
+          "Balanced",
+          "Lite"
+        ]
+      }
+    ]
+  }
+}

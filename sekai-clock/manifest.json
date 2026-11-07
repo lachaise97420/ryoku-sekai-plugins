@@ -1,0 +1,20 @@
+{
+  "id": "sekai-clock",
+  "name": "Sekai Clock",
+  "version": "0.1.0",
+  "author": "Warren <warren@local>",
+  "description": "SekaiPop's STACK clock as a Ryoku desktop widget: sticker digits, beat-diamond seconds ring, AM/PM chip.",
+  "license": "MIT",
+  "official": false,
+  "hosts": ["desktopWidget"],
+  "entryPoints": { "main": "service/Main.qml", "content": "content/Widget.qml" },
+  "files": [],
+  "capabilities": { "densities": ["compact", "full"] },
+  "defaults": { "host": "desktopWidget", "label": "Sekai Clock", "desktopWidget": { "bg": "none" } },
+  "dependencies": { "commands": ["ryoku-plugins-place"] },
+  "metadata": {
+    "settings": [
+      { "key": "use24h", "type": "toggle", "label": "Format 24 h", "group": "Horloge", "default": true }
+    ]
+  }
+}

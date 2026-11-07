@@ -1,0 +1,75 @@
+{
+  "id": "sekai-lyrics",
+  "name": "Sekai Lyrics",
+  "version": "0.2.0",
+  "author": "Warren <warren@local>",
+  "description": "SekaiPop's desktop lyrics widget: synced and word-by-word karaoke, sticker styling, beat diamond, ad-libs, takeover and gaps.",
+  "license": "MIT",
+  "official": false,
+  "hosts": [
+    "desktopWidget"
+  ],
+  "entryPoints": {
+    "main": "service/Main.qml",
+    "content": "content/Widget.qml"
+  },
+  "files": [
+    "content/LyricsMath.js",
+    "content/SekaiTheme.qml",
+    "content/MediaSource.qml",
+    "content/LyricsWord.qml",
+    "content/LyricsLine.qml",
+    "content/LyricsKey.qml",
+    "content/LyricsSources.qml",
+    "content/DiamondDot.qml",
+    "content/Burst.qml",
+    "content/Pill.qml",
+    "bin/lyrics-cache.sh",
+    "bin/lyrics-state.sh",
+    "assets/preview-widget.png"
+  ],
+  "capabilities": {
+    "densities": [
+      "compact",
+      "full"
+    ],
+    "network": [
+      "api.betterlyrics.org",
+      "api-lyrics.simpmusic.org",
+      "c.y.qq.com",
+      "i.ytimg.com",
+      "lrclib.net",
+      "lyrics-api.boidu.dev",
+      "lyrics.kugou.com",
+      "lyricsplus.prjktla.workers.dev",
+      "mobileservice.kugou.com",
+      "music.163.com",
+      "music.youtube.com",
+      "y.qq.com"
+    ]
+  },
+  "defaults": {
+    "host": "desktopWidget",
+    "label": "Sekai Lyrics",
+    "desktopWidget": {
+      "bg": "none"
+    }
+  },
+  "dependencies": {
+    "commands": [
+      "awk",
+      "base64",
+      "cat",
+      "curl",
+      "mkdir",
+      "mv",
+      "printf",
+      "sh",
+      "sleep",
+      "ryoku-plugins-place"
+    ]
+  },
+  "metadata": {
+    "settings": []
+  }
+}
