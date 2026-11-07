@@ -23,6 +23,7 @@ Item {
     property bool dark: true
     property bool darker: false
     property var matugenPal: null
+    property var ryokuMatugenPal: null
 
     readonly property string stateDir: {
         const xdg = Quickshell.env("XDG_STATE_HOME")
@@ -66,17 +67,40 @@ Item {
         onFileChanged: matugenFile.reload()
     }
 
+    // Ryoku's own wallpaper-derived colors (matugen). Used as a fallback (or
+    // primary source) for the matugen palette when SekaiPop's matugen file is
+    // missing, so the widgets follow Ryoku's wallpaper under Ryoku.
+    FileView {
+        id: ryokuColorsFile
+        path: (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/ryoku/colors.json"
+        watchChanges: true
+        printErrors: false
+        onLoaded: root.readRyokuMatugen()
+        onFileChanged: ryokuColorsFile.reload()
+    }
+
     Component.onCompleted: {
         root.readTheme()
         root.readDark()
         root.readDarker()
         root.readMatugen()
+        root.readRyokuMatugen()
     }
 
     function readTheme(): void {
         const t = String(themeFile.text()).trim()
         const ids = ["vs", "leoneed", "mmj", "vbs", "wxs", "nightcord", "mono", "matugen", "custom"]
-        root.themeId = ids.indexOf(t) >= 0 ? t : "vs"
+        // Under Ryoku, follow the wallpaper (matugen) unless the user explicitly
+        // chose a Sekai group theme in SekaiPop's state file.
+        if (ids.indexOf(t) >= 0 && t !== "vs" && t !== "") {
+            root.themeId = t
+        } else if (root.ryokuMatugenPal) {
+            root.themeId = "matugen"
+        } else if (ids.indexOf(t) >= 0) {
+            root.themeId = t
+        } else {
+            root.themeId = "vs"
+        }
     }
 
     function readFlag(view, fallback) {
@@ -100,6 +124,42 @@ Item {
             root.matugenPal = root.buildMatugen(d)
         } catch (e) {
             root.matugenPal = null
+        }
+        root.readRyokuMatugen()
+    }
+
+    function readRyokuMatugen(): void {
+        try {
+            const d = JSON.parse(String(ryokuColorsFile.text()))
+            root.ryokuMatugenPal = root.buildRyokuMatugen(d)
+        } catch (e) {
+            root.ryokuMatugenPal = null
+        }
+        // Re-evaluate theme if it was defaulted.
+        root.readTheme()
+    }
+
+    // Build a SekaiPop matugen palette from Ryoku's flat Material You colors.
+    function buildRyokuMatugen(d) {
+        if (!d || typeof d !== "object")
+            return null
+        const primary = d.primary
+        const secondary = d.secondary || d.tertiary
+        const outline = d.outline || d.onSurfaceVariant
+        const surface = d.surface || d.background
+        const surfaceVariant = d.surfaceVariant
+        const deep = d.surfaceContainerLowest || d.background || d.surfaceContainerLow
+        const divider = surfaceVariant || d.outlineVariant
+        const wallLight = d.surfaceContainer || d.surfaceContainerHigh || surfaceVariant
+        if (!primary || !secondary || !outline)
+            return null
+        return {
+            border: outline,
+            A: primary,
+            B: secondary,
+            deep: deep,
+            divider: divider,
+            wallLight: wallLight
         }
     }
 
@@ -139,8 +199,12 @@ Item {
     })
 
     readonly property var pal: {
-        if (root.themeId === "matugen" && root.matugenPal)
-            return root.matugenPal
+        if (root.themeId === "matugen") {
+            if (root.matugenPal)
+                return root.matugenPal
+            if (root.ryokuMatugenPal)
+                return root.ryokuMatugenPal
+        }
         return root.palettes[root.themeId] ? root.palettes[root.themeId] : root.palettes.vs
     }
 

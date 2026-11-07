@@ -23,6 +23,7 @@ Item {
     property bool dark: true
     property bool darker: false
     property var matugenPal: null
+    property var ryokuMatugenPal: null
 
     readonly property string stateDir: {
         const xdg = Quickshell.env("XDG_STATE_HOME")
@@ -66,17 +67,40 @@ Item {
         onFileChanged: matugenFile.reload()
     }
 
+    // Ryoku's own wallpaper-derived colors (matugen). Used as a fallback (or
+    // primary source) for the matugen palette when SekaiPop's matugen file is
+    // missing, so the widgets follow Ryoku's wallpaper under Ryoku.
+    FileView {
+        id: ryokuColorsFile
+        path: (Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")) + "/ryoku/colors.json"
+        watchChanges: true
+        printErrors: false
+        onLoaded: root.readRyokuMatugen()
+        onFileChanged: ryokuColorsFile.reload()
+    }
+
     Component.onCompleted: {
         root.readTheme()
         root.readDark()
         root.readDarker()
         root.readMatugen()
+        root.readRyokuMatugen()
     }
 
     function readTheme(): void {
         const t = String(themeFile.text()).trim()
         const ids = ["vs", "leoneed", "mmj", "vbs", "wxs", "nightcord", "mono", "matugen", "custom"]
-        root.themeId = ids.indexOf(t) >= 0 ? t : "vs"
+        // Under Ryoku, follow the wallpaper (matugen) unless the user explicitly
+        // chose a Sekai group theme in SekaiPop's state file.
+        if (ids.indexOf(t) >= 0 && t !== "vs" && t !== "") {
+            root.themeId = t
+        } else if (root.ryokuMatugenPal) {
+            root.themeId = "matugen"
+        } else if (ids.indexOf(t) >= 0) {
+            root.themeId = t
+        } else {
+            root.themeId = "vs"
+        }
     }
 
     function readFlag(view, fallback) {
@@ -100,6 +124,42 @@ Item {
             root.matugenPal = root.buildMatugen(d)
         } catch (e) {
             root.matugenPal = null
+        }
+        root.readRyokuMatugen()
+    }
+
+    function readRyokuMatugen(): void {
+        try {
+            const d = JSON.parse(String(ryokuColorsFile.text()))
+            root.ryokuMatugenPal = root.buildRyokuMatugen(d)
+        } catch (e) {
+            root.ryokuMatugenPal = null
+        }
+        // Re-evaluate theme if it was defaulted.
+        root.readTheme()
+    }
+
+    // Build a SekaiPop matugen palette from Ryoku's flat Material You colors.
+    function buildRyokuMatugen(d) {
+        if (!d || typeof d !== "object")
+            return null
+        const primary = d.primary
+        const secondary = d.secondary || d.tertiary
+        const outline = d.outline || d.onSurfaceVariant
+        const surface = d.surface || d.background
+        const surfaceVariant = d.surfaceVariant
+        const deep = d.surfaceContainerLowest || d.background || d.surfaceContainerLow
+        const divider = surfaceVariant || d.outlineVariant
+        const wallLight = d.surfaceContainer || d.surfaceContainerHigh || surfaceVariant
+        if (!primary || !secondary || !outline)
+            return null
+        return {
+            border: outline,
+            A: primary,
+            B: secondary,
+            deep: deep,
+            divider: divider,
+            wallLight: wallLight
         }
     }
 
@@ -139,15 +199,23 @@ Item {
     })
 
     readonly property var pal: {
-        if (root.themeId === "matugen" && root.matugenPal)
-            return root.matugenPal
+        if (root.themeId === "matugen") {
+            if (root.matugenPal)
+                return root.matugenPal
+            if (root.ryokuMatugenPal)
+                return root.ryokuMatugenPal
+        }
         return root.palettes[root.themeId] ? root.palettes[root.themeId] : root.palettes.vs
     }
 
     // ===== ThemeSet.qml, verbatim =====
+    readonly property bool mono: pal.mono === true
+
     readonly property color colBorder: pal.border
+    readonly property color colBg: "#ffffff"
     readonly property color accentCyan: pal.A
     readonly property color accentMint: pal.B
+    readonly property color textWhite: "#ffffff"
 
     readonly property color surface: root.darker
         ? Qt.darker(Qt.color(pal.deep), 1.4)
@@ -157,6 +225,9 @@ Item {
     readonly property color ringWhite: root.darker
         ? Qt.lighter(surface, 2.0)
         : (root.dark ? Qt.tint(Qt.color("#ffffff"), Qt.rgba(colBorder.r, colBorder.g, colBorder.b, 0.08)) : "#ffffff")
+    readonly property color surfaceRing: root.darker
+        ? Qt.lighter(surface, 1.6)
+        : (root.dark ? Qt.tint(Qt.color("#ffffff"), Qt.rgba(colBorder.r, colBorder.g, colBorder.b, 0.18)) : "#d9d9d9")
     readonly property color ink: root.dark ? Qt.color(pal.divider) : pal.border
     readonly property color inkSub: Qt.rgba(ink.r, ink.g, ink.b, 0.667)
 
@@ -167,12 +238,76 @@ Item {
         ? Qt.darker(colBorder, 1.8)
         : (root.dark ? Qt.darker(colBorder, 1.3) : Qt.tint(Qt.color("#ffffff"), Qt.rgba(colBorder.r, colBorder.g, colBorder.b, 0.30)))
 
+    // The filled chips of the bar and popups.
+    readonly property color chipFill: root.darker
+        ? Qt.darker(colBorder, 1.35)
+        : (root.dark ? Qt.color(colBorder) : Qt.tint(Qt.color("#ffffff"), Qt.rgba(colBorder.r, colBorder.g, colBorder.b, 0.14)))
+    readonly property color chipInk: root.dark ? textWhite : Qt.color(colBorder)
+
+    // Behind dialogs / the framer.
+    readonly property color scrim: root.dark
+        ? Qt.color(pal.deep)
+        : Qt.tint(Qt.color("#ffffff"), Qt.rgba(colBorder.r, colBorder.g, colBorder.b, 0.10))
+
+    // ===== Classic panel look =====
+    readonly property bool classic: root.dark && !root.darker
+    readonly property color colHover: "#f2f2f2"
+    readonly property color colDivider: pal.divider
+    readonly property color colOuterRing: "#d9d9d9"
+    readonly property color colSubText: Qt.rgba(colBorder.r, colBorder.g, colBorder.b, 0.667)
+    readonly property color pSurface: classic ? colBg : surface
+    readonly property color pSurfaceHover: classic ? colHover : surfaceHover
+    readonly property color pSurfaceDivider: classic ? colDivider : surfaceDivider
+    readonly property color pSurfaceRing: classic ? colOuterRing : surfaceRing
+    readonly property color pRingWhite: classic ? Qt.color("#ffffff") : ringWhite
+    readonly property color pLine: classic ? colBorder : line
+    readonly property color pLineShadow: classic ? colBorder : lineShadow
+    readonly property color pInk: classic ? colBorder : ink
+    readonly property color pInkSub: classic ? colSubText : inkSub
+
+    // Shared pieces ask this: is `item` inside something that sets
+    // `classicPanel: true`? Only then, and only in classic mode, they use the
+    // classic colours (ThemeSet.qml's classicFor, verbatim).
+    function classicFor(item) {
+        if (!root.classic)
+            return false
+        for (let p = item; p; p = p.parent)
+            if (p.classicPanel === true)
+                return true
+        return false
+    }
+
+    readonly property color colDeep: pal.deep
+
     readonly property real cardRing: root.dark ? root.borderWidth : 0
     readonly property int radiusOuter: 13
     readonly property int borderWidth: 3
     readonly property int shadowOffset: 4
+    readonly property real whiteLine: 2
+    readonly property int outerRingWidth: 4
+    readonly property int pillHeight: 36
+
+    // Capsule-bar hooks the shared Pill asks for; this port never draws one.
+    function capsuleFor(item) { return false }
+    function capsuleVerticalFor(item) { return false }
+    readonly property real capChipHeight: 21
+    readonly property real capVChip: 40
+    readonly property real barVPillWidth: 52
+    readonly property color capShade: "#000000"
+    readonly property color capRim: "#000000"
+    readonly property color capBody: "#ffffff"
 
     readonly property string fontFamily: "Noto Sans"
     readonly property string fontStyleBold: "ExtraBold"
-    readonly property var attributeColors: [accentCyan, accentMint, "#ffffff"]
+
+    // The five Project Sekai card attributes (ThemeSet.qml, verbatim).
+    readonly property var attributeColors: mono
+        ? ["#e4e4e4", "#b0b0b0", "#f6f6f6", "#8c8c8c", "#cecece"]
+        : ["#8EE3EF", "#FF9ECB", "#FFE066", "#B39DDB", "#A5E6A5"]
+
+    // Icons (the framer and the picture row use the Solar outline set).
+    readonly property string iconFont: "Material Symbols Rounded"
+    readonly property real iconFill: 0
+    readonly property string iconStyle: "outline"
+    readonly property real iconWeight: 400
 }
